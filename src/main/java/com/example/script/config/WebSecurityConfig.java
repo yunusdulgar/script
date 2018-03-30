@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -49,11 +50,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return authProvider;
   }
 
+  @Autowired
+  private RESTAuthenticationEntryPoint authenticationEntryPoint;
+  @Autowired
+  private RESTAuthenticationFailureHandler authenticationFailureHandler;
+  @Autowired
+  private RESTAuthenticationSuccessHandler authenticationSuccessHandler;
+
+
+
   @Override
   protected void configure(AuthenticationManagerBuilder auth)
       throws Exception {
     auth.authenticationProvider(authenticationProvider());
   }
+
 
 
   @Override
@@ -78,10 +89,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       LOGGER.info("userItem : " + userItem.getUsername());
     }
 
+    /* http.authorizeRequests().antMatchers("/rest/**").authenticated();
+    http.csrf().disable();
+    http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+    http.formLogin().successHandler(authenticationSuccessHandler);
+    http.formLogin().failureHandler(authenticationFailureHandler);*/
+
     http
         .authorizeRequests()
         .antMatchers("/home").permitAll()
-        .antMatchers("/h2").hasRole("ADMIN")
+        .antMatchers("/h2","/rest/**").hasRole("ADMIN")
         .anyRequest().authenticated()
         .and()
         .formLogin()
@@ -96,10 +113,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .csrf()
         // Allow unsecured requests to H2 console
         .ignoringAntMatchers("/h2", "/h2/**").and().headers().frameOptions().disable();
-
-
-
-
     /*http.csrf().disable();
     http.headers().frameOptions().disable();*/
 
@@ -125,7 +138,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
   public AuthenticationSuccessHandler loginSuccessHandler() {
-    LOGGER.debug("loginSuccessHandler");
+    LOGGER.info("loginSuccessHandler");
 
     return (request, response, authentication) -> response.sendRedirect("/index");
   }
