@@ -14,26 +14,20 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   @Autowired
   private UserServiceImpl userService;
-
-  /*@Bean
-  public ServletRegistrationBean h2servletRegistration() {
-    ServletRegistrationBean registration = new ServletRegistrationBean(new WebdavServlet());
-    registration.addUrlMappings("/h2/*");
-    return registration;
-  }*/
 
   @Bean
   public PasswordEncoder encoder() {
@@ -54,6 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       throws Exception {
     auth.authenticationProvider(authenticationProvider());
   }
+
 
 
   @Override
@@ -78,10 +73,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
       LOGGER.info("userItem : " + userItem.getUsername());
     }
 
+    /* http.authorizeRequests().antMatchers("/rest/**").authenticated();
+    http.csrf().disable();
+    http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
+    http.formLogin().successHandler(authenticationSuccessHandler);
+    http.formLogin().failureHandler(authenticationFailureHandler);*/
+
     http
         .authorizeRequests()
         .antMatchers("/home").permitAll()
-        .antMatchers("/h2").hasRole("ADMIN")
+        .antMatchers("/h2","/rest/**").hasRole("ADMIN")
         .anyRequest().authenticated()
         .and()
         .formLogin()
@@ -96,10 +97,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .csrf()
         // Allow unsecured requests to H2 console
         .ignoringAntMatchers("/h2", "/h2/**").and().headers().frameOptions().disable();
-
-
-
-
     /*http.csrf().disable();
     http.headers().frameOptions().disable();*/
 
@@ -125,7 +122,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
   public AuthenticationSuccessHandler loginSuccessHandler() {
-    LOGGER.debug("loginSuccessHandler");
+    LOGGER.info("loginSuccessHandler");
 
     return (request, response, authentication) -> response.sendRedirect("/index");
   }
@@ -133,7 +130,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   public AuthenticationFailureHandler loginFailureHandler() {
     LOGGER.debug("loginFailureHandler");
 
-    return (request, response, exception) -> {
-    };
+    return (request, response, exception) -> response.sendRedirect("/login");
   }
 }
