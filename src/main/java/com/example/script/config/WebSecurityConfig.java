@@ -20,21 +20,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   @Autowired
   private UserServiceImpl userService;
-
-  /*@Bean
-  public ServletRegistrationBean h2servletRegistration() {
-    ServletRegistrationBean registration = new ServletRegistrationBean(new WebdavServlet());
-    registration.addUrlMappings("/h2/*");
-    return registration;
-  }*/
 
   @Bean
   public PasswordEncoder encoder() {
@@ -49,15 +42,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     authProvider.setPasswordEncoder(encoder());
     return authProvider;
   }
-
-  @Autowired
-  private RESTAuthenticationEntryPoint authenticationEntryPoint;
-  @Autowired
-  private RESTAuthenticationFailureHandler authenticationFailureHandler;
-  @Autowired
-  private RESTAuthenticationSuccessHandler authenticationSuccessHandler;
-
-
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth)
@@ -146,7 +130,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   public AuthenticationFailureHandler loginFailureHandler() {
     LOGGER.debug("loginFailureHandler");
 
-    return (request, response, exception) -> {
-    };
+    return (request, response, exception) -> response.sendRedirect("/login");
   }
 }
